@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .searchBox {
+            width: 800px;
+            display: flex;
+        }
+
+        .input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .select {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .btn {
+            width: 100px;
+        }
+
+        .mapBox {
+            display: flex;
+            height: 800px;
+        }
+
+        #address {
+            width: 400px;
+            height: 800px;
+            line-height: 30px;
+            overflow: scroll;
+        }
+
+        .map {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="searchBox">
+    <input type="text" class="input" value="" id="input1" placeholder="请输入地址"/>
+    <input type="text" class="input" value="" id="input2" placeholder="点击地图设置坐标"/>
+    <input type="text" class="input" value="" id="input3" placeholder="请输入搜索半径"/>
+    <select id="type" class="select">
+        <option>住宿服务</option>
+        <option>风景名胜</option>
+        <option>商务住宅</option>
+        <option>科教文化服务</option>
+        <option>地名地址信息</option>
+        <option>汽车服务</option>
+        <option>汽车销售</option>
+        <option>汽车维修</option>
+        <option>摩托车服务</option>
+        <option>餐饮服务</option>
+        <option>购物服务</option>
+        <option>生活服务</option>
+        <option>体育休闲服务</option>
+        <option>医疗保健服务</option>
+        <option>政府机构及社会团体</option>
+        <option>交通设施服务</option>
+        <option>金融保险服务</option>
+        <option>公司企业</option>
+        <option>道路附属设施</option>
+
+        <option>公共设施</option>
+    </select>
+    <button class="btn" id="btn">查询</button>
+</div>
+<div class="mapBox">
+    <div id="address"></div>
+    <div id="container" class="map"></div>
+</div>
+<script src="https://map.qq.com/api/js?v=2.exp&key=HDSBZ-UIFRX-N5742-ZCRO5-6NA4T-GHFIE&libraries=convertor,geometry"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.0&key=c37cdb5d35801aa682fe237825a121b7&plugin=AMap.Transfer,AMap.PlaceSearch"></script>
+<script>
+  window.onload = function() {
+    var $btn = document.getElementById('btn');
+    var map = new AMap.Map('container', {
+      resizeEnable: true,
+      center: [104.082069, 30.629050],
+      zoom: 12
+    });
+
+    map.on('click', function(e) {
+      document.getElementById('input2').value = e.lnglat.getLng() + ',' + e.lnglat.getLat();
+    });
+
+    $btn.addEventListener('click', function() {
+      var $select = document.getElementById('type');
+      var $input1 = document.getElementById('input1');
+      var $input2 = document.getElementById('input2');
+      var $input3 = document.getElementById('input3');
+      var $address = document.getElementById('address');
+
+      var httpRequest = new XMLHttpRequest();
+      var url = 'https://apis.map.qq.com/ws/place/v1/suggestion';
+      httpRequest.open('GET', url);
+      httpRequest.send(null);
+      httpRequest.onreadystatechange = function() {
+        console.log(httpRequest)
+        if (httpRequest.readyState === 4 && httpRequest.status === 200) {
+
+        }
+      };
+
+      var placeSearch = new AMap.PlaceSearch({
+        // city 指定搜索所在城市，支持传入格式有：城市名、citycode和adcode
+        map: map,
+        city: '成都',
+        citylimit: true,
+        extensions: 'all',
+        type: $select.value,
+        children: 1,
+        pageSize: 50,
+        autoFitView: true
+      });
+
+      $address.innerHTML = '';
+      var keyword = $input1.value;
+      var point = $input2.value;
+      var radius = $input3.value || 500;
+
+      if (!point) {
+        point = [104.082069, 30.629050];
+      } else {
+        var pointArr = point.split(',');
+        point = [pointArr[0], pointArr[1]];
+      }
+
+      placeSearch.searchNearBy(keyword, point, radius, function(status, result) {
+        console.log(status);
+        console.log(result);
+
+        if (status === 'complete' && result.info === 'OK') {
+          var addressList = result.poiList.pois;
+
+          const ulelem = document.createElement('ul');
+          addressList.forEach((item) => {
+            const liElem = document.createElement('li');
+            const liElemTxt = document.createTextNode(item.name);
+            liElem.appendChild(liElemTxt);
+            if (item.children) {
+              const childUl = document.createElement('ul');
+              item.children.forEach((child) => {
+                const childLi = document.createElement('li');
+                const childLiTxt = document.createTextNode(child.sname);
+                childLi.appendChild(childLiTxt);
+                childUl.appendChild(childLi);
+              });
+              liElem.appendChild(childUl);
+            }
+            ulelem.appendChild(liElem);
+          });
+
+          $address.appendChild(ulelem);
+        } else {
+          const text = document.createTextNode('暂无搜索结果');
+          $address.appendChild(text);
+        }
+      });
+    });
+  };
+</script>
+</body>
+</html>

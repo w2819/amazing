@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>百度地图定位</title>
+    <script>
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    var ua = navigator.userAgent
+                    if (!/(iPhone|iPad|iPod|iOS)/i.test(ua) && !/(Android)/i.test(ua) ) {
+                        docEl.style.fontSize = 15 + 'px';
+                    } else {
+                        docEl.style.fontSize = 20 * (clientWidth / 750) + 'px';
+                    }
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window)
+    </script>
+    <style>
+        .address{
+            margin:3rem auto;
+            padding: 0 1.5rem;
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+<div class="address" id="address">
+    <p id="province">定位中...</p>
+    <p id="city"></p>
+    <p id="county"></p>
+    <p id="street"></p>
+    <p id="streetNumber"></p>
+    <p id="point"></p>
+</div>
+<script src="http://api.map.baidu.com/api?v=2.0&ak=BriDmV4VWIBGg9CEDeDlwG0GUIzhmK1N"></script>
+<script>
+    function getLocation () {
+        var geolocation = new BMap.Geolocation();
+        var gc = new BMap.Geocoder();
+        geolocation.getCurrentPosition(function (r) {
+            if (this.getStatus() === BMAP_STATUS_SUCCESS) {
+                gc.getLocation(r.point, function (rs) {
+                    var addComp = rs.addressComponents;
+                    addComp.point = r.point
+                    console.log(addComp)
+                    document.querySelector('#province').innerHTML = '省：' + addComp.province
+                    document.querySelector('#city').innerHTML = '市：' + addComp.city
+                    document.querySelector('#county').innerHTML = '区县：' + addComp.district
+                    document.querySelector('#street').innerHTML = '街道：' + addComp.street
+                    document.querySelector('#streetNumber').innerHTML = '街道号：' + addComp.streetNumber
+                    document.querySelector('#point').innerHTML = '坐标：' + addComp.point.lat + ',' + addComp.point.lng
+                });
+            } else {
+                document.querySelector('#address').innerHTML = '定位失败'
+            }
+        }, {enableHighAccuracy: true})
+    }
+    getLocation()
+</script>
+</body>
+</html>

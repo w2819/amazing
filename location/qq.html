@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>腾讯地图定位</title>
+    <script>
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    var ua = navigator.userAgent
+                    if (!/(iPhone|iPad|iPod|iOS)/i.test(ua) && !/(Android)/i.test(ua) ) {
+                        docEl.style.fontSize = 15 + 'px';
+                    } else {
+                        docEl.style.fontSize = 20 * (clientWidth / 750) + 'px';
+                    }
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window)
+    </script>
+    <style>
+        .address{
+            margin:3rem auto;
+            padding: 0 1.5rem;
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+<div class="address" id="address">
+    <p id="province">定位中...</p>
+    <p id="city"></p>
+    <p id="county"></p>
+    <p id="street"></p>
+    <p id="streetNumber"></p>
+    <p id="point"></p>
+</div>
+<script type="text/javascript" src="https://apis.map.qq.com/tools/geolocation/min?key=PIJBZ-HFAWF-SFMJT-J77JE-LQXBJ-BKFXY&referer=ck"></script>
+<script>
+    function getLocation () {
+        var geolocation = new qq.maps.Geolocation();
+        geolocation.getLocation(showPosition, showErr, {failTipFlag: true});
+        
+        function showPosition(addComp) {
+          console.log(addComp)
+          document.querySelector('#province').innerHTML = '省：' + addComp.province
+          document.querySelector('#city').innerHTML = '市：' + addComp.city
+          document.querySelector('#county').innerHTML = '区县：' + addComp.district
+          document.querySelector('#street').innerHTML = '街道：' + addComp.addr
+          document.querySelector('#streetNumber').innerHTML = '街道号：' + addComp.streetNumber
+          document.querySelector('#point').innerHTML = '坐标：' + addComp.lat + ',' + addComp.lng
+        }
+
+        function showErr() {
+            document.querySelector('#address').innerHTML = '定位失败'
+        }
+    }
+    getLocation()
+</script>
+</body>
+</html>

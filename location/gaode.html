@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>高德地图定位</title>
+    <script>
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    var ua = navigator.userAgent
+                    if (!/(iPhone|iPad|iPod|iOS)/i.test(ua) && !/(Android)/i.test(ua) ) {
+                        docEl.style.fontSize = 15 + 'px';
+                    } else {
+                        docEl.style.fontSize = 20 * (clientWidth / 750) + 'px';
+                    }
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window)
+    </script>
+    <style>
+        .address{
+            margin:3rem auto;
+            padding: 0 1.5rem;
+            font-size: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+<div class="address" id="address">
+    <p id="province">定位中...</p>
+    <p id="city"></p>
+    <p id="county"></p>
+    <p id="street"></p>
+    <p id="streetNumber"></p>
+    <p id="detailAddress"></p>
+    <p id="point"></p>
+</div>
+<script src="http://webapi.amap.com/maps?v=1.3&key=c37cdb5d35801aa682fe237825a121b7"></script>
+
+<script>
+    function getLocation () {
+      AMap.plugin('AMap.Geolocation', function () {
+        var geolocation = new AMap.Geolocation({
+          enableHighAccuracy: true,//是否使用高精度定位，默认:true
+          timeout: 5000,          //超过10秒后停止定位，默认：无穷大
+          maximumAge: 0,           //定位结果缓存0毫秒，默认：0
+          convert: true,           //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
+          showButton: false,        //显示定位按钮，默认：true
+          buttonPosition: 'LB',    //定位按钮停靠位置，默认：'LB'，左下角
+          buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+          showMarker: false,        //定位成功后在定位到的位置显示点标记，默认：true
+          showCircle: false,        //定位成功后用圆圈表示定位精度范围，默认：true
+          panToLocation: false,     //定位成功后将定位到的位置作为地图中心点，默认：true
+          zoomToAccuracy:false      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+        });
+        geolocation.getCurrentPosition(function(status, result){
+          if(status === 'complete'){
+            console.log(result)
+            document.querySelector('#province').innerHTML = '省：' +  result.addressComponent.province
+            document.querySelector('#city').innerHTML = '市：' +  result.addressComponent.city
+            document.querySelector('#county').innerHTML = '区县：' +  result.addressComponent.district
+            document.querySelector('#street').innerHTML = '街道：' + result.addressComponent.street
+            document.querySelector('#streetNumber').innerHTML = '街道号：' +  result.addressComponent.streetNumber
+            document.querySelector('#detailAddress').innerHTML = '详细地址：' +  result.formattedAddress
+            document.querySelector('#point').innerHTML = '坐标：' + result.position.lat + ',' + result.position.lng
+          }else{
+            document.querySelector('#address').innerHTML = '定位失败'
+          }
+        });
+      });
+    }
+    getLocation()
+</script>
+</body>
+</html>
